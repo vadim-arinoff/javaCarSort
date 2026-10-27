@@ -21,12 +21,12 @@ public class FileReader implements Reader {
     public List<Car> read() {
         File file = new File(path);
         if (!file.exists() || !file.isFile()) {
-            throw new RuntimeException("Файл не найден или не является файлом: " + path);
+            throw new RuntimeException("File not found or is not a file: " + path);
         }
         try {
             return mapper.readValue(file, new TypeReference<List<Car>>() {});
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка чтения файла: " + e.getMessage(), e);
+            throw new RuntimeException("Error reading file: " + e.getMessage(), e);
         }
     }
 }

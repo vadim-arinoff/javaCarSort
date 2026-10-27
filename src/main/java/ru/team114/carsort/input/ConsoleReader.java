@@ -23,35 +23,37 @@ public class ConsoleReader implements Reader {
     @Override
     public List<Car> read() {
         String input = firstLine.trim();
+        boolean wasJsonAttempt = input.startsWith("{") || input.startsWith("[");
 
-        if (input.startsWith("{") || input.startsWith("[")) {
+        if (wasJsonAttempt) {
             try {
                 List<Car> cars = mapper.readValue(input, new TypeReference<List<Car>>() {});
-                System.out.println("✅ Успешно распознан JSON. Загружено машин: " + cars.size());
+                System.out.println("JSON successfully recognized. Cars loaded: " + cars.size());
                 return cars;
             } catch (Exception e) {
-                System.out.println("⚠️ Не удалось распарсить JSON (" + e.getMessage() + ").");
-                System.out.println("→ Переключаюсь на ручной пошаговый ввод.\n");
+                System.out.println("Failed to parse JSON (" + e.getMessage() + ").");
+                System.out.println("→ Switching to manual step-by-step input.\n");
             }
         }
 
         List<Car> cars = new ArrayList<>();
         boolean keepAdding = true;
-        String currentModel = input;
+        
+        String currentModel = wasJsonAttempt ? "" : input; 
 
         while (keepAdding) {
-            System.out.print("Модель автомобиля: ");
+            System.out.print("Car model: ");
             String model = currentModel.isEmpty() ? scanner.nextLine().trim() : currentModel;
             
-            int power = readPositiveInt("Мощность (целое число > 0): ");
-            int year = readPositiveInt("Год выпуска: ");
+            int power = readPositiveInt("Power (integer > 0): ");
+            int year = readPositiveInt("Year of manufacture: ");
 
             cars.add(new Car(power, model, year));
-            System.out.println("✅ Машина '" + model + "' добавлена.");
+            System.out.println("Car '" + model + "' added.");
 
             currentModel = "";
             
-            System.out.print("Добавить ещё одну машину? (y/n): ");
+            System.out.print("Add another car? (y/n): ");
             String answer = scanner.nextLine().trim().toLowerCase();
             keepAdding = answer.equals("y") || answer.equals("yes") || answer.equals("д");
             System.out.println();
@@ -66,12 +68,12 @@ public class ConsoleReader implements Reader {
             try {
                 int val = Integer.parseInt(scanner.nextLine().trim());
                 if (val <= 0) {
-                    System.out.println("❌ Должно быть > 0. Повторите.");
+                    System.out.println("Must be > 0. Please try again.");
                     continue;
                 }
                 return val;
             } catch (NumberFormatException e) {
-                System.out.println("❌ Ожидалось целое число. Повторите.");
+                System.out.println("Expected an integer. Please try again.");
             }
         }
     }

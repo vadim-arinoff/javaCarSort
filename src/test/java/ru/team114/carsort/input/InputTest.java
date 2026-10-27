@@ -36,15 +36,15 @@ class InputTest {
     @Test
     void testReadFromResource() {
         // Имитируем ввод имени файла из classpath
-        Input input = createInputWith("test_cars.json");
+        Input input = createInputWith("test_car.json");
         
         List<Car> cars = input.execute();
         
         assertNotNull(cars);
         assertEquals(2, cars.size());
-        assertEquals("Resource Car 1", cars.get(0).getModel());
-        assertEquals(150, cars.get(0).getPower());
-        assertEquals("Resource Car 2", cars.get(1).getModel());
+        assertEquals("Toyota Camry", cars.get(0).getModel());
+        assertEquals(200, cars.get(0).getPower());
+        assertEquals("Audi R8", cars.get(1).getModel());
     }
 
     @Test

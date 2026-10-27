@@ -15,14 +15,15 @@ public abstract class AbstractCar {
     private void validate(int power, String model, int year) {
         if (power <= 0) {
             throw new IllegalArgumentException(
-                    "Мощность должна быть положительным числом. Получено: " + power);
+                    "Power must be a positive number. Received: " + power);
         }
         if (model == null || model.trim().isEmpty()) {
-            throw new IllegalArgumentException("Модель не может быть пустой или null.");
-        }        int currentYear = 2026;
+            throw new IllegalArgumentException("Model cannot be empty or null.");
+        }
+        int currentYear = 2026;
         if (year < 1886 || year > currentYear) {
             throw new IllegalArgumentException(
-                    String.format("Год выпуска должен быть от 1886 до %d. Получено: %d",
+                    String.format("Year of manufacture must be between 1886 and %d. Received: %d",
                             currentYear, year));
         }
     }
@@ -41,6 +42,6 @@ public abstract class AbstractCar {
 
     @Override
     public String toString() {
-        return String.format("%s (%d) — %d л.с.", model, year, power);
+        return String.format("%s (%d) — %d hp", model, year, power);
     }
 }

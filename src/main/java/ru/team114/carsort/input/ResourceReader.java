@@ -22,11 +22,11 @@ public class ResourceReader implements Reader {
         String path = resourceName.startsWith("/") ? resourceName : "/" + resourceName;
         try (InputStream is = ResourceReader.class.getResourceAsStream(path)) {
             if (is == null) {
-                throw new RuntimeException("Ресурс не найден в classpath: " + path);
+                throw new RuntimeException("Resource not found in classpath: " + path);
             }
             return mapper.readValue(is, new TypeReference<List<Car>>() {});
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка чтения ресурса: " + e.getMessage(), e);
+            throw new RuntimeException("Error reading resource: " + e.getMessage(), e);
         }
     }
 }
