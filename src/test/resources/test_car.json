@@ -1,0 +1,12 @@
+[
+  {
+    "model": "Toyota Camry",
+    "power": 200,
+    "year": 2022
+  },
+  {
+    "model": "Audi R8",
+    "power": 525,
+    "year": 2010
+  }
+]
