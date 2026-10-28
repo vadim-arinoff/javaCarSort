@@ -2,13 +2,12 @@ package ru.team114.carsort.input;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import ru.team114.carsort.input.temp.Car;
-
+import ru.team114.carsort.model.Car;
 import java.io.InputStream;
 import java.util.List;
 
 public class ResourceReader implements Reader {
+
     private final String resourceName;
     private final ObjectMapper mapper;
 
@@ -24,7 +23,8 @@ public class ResourceReader implements Reader {
             if (is == null) {
                 throw new RuntimeException("Resource not found in classpath: " + path);
             }
-            return mapper.readValue(is, new TypeReference<List<Car>>() {});
+            return mapper.readValue(is, new TypeReference<List<Car>>() {
+            });
         } catch (Exception e) {
             throw new RuntimeException("Error reading resource: " + e.getMessage(), e);
         }

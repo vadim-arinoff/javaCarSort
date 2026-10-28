@@ -1,12 +1,12 @@
 [
   {
-    "model": "Toyota Camry",
+    "modelName": "Toyota Camry",
     "power": 200,
-    "year": 2022
+    "productionYear": 2022
   },
   {
-    "model": "Audi R8",
+    "modelName": "Audi R8",
     "power": 525,
-    "year": 2010
+    "productionYear": 2010
   }
 ]

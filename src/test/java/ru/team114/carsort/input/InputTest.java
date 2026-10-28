@@ -2,11 +2,9 @@ package ru.team114.carsort.input;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import ru.team114.carsort.input.temp.Car;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.team114.carsort.model.Car;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -14,7 +12,8 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.Scanner;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class InputTest {
 
@@ -42,18 +41,17 @@ class InputTest {
         
         assertNotNull(cars);
         assertEquals(2, cars.size());
-        assertEquals("Toyota Camry", cars.get(0).getModel());
+        assertEquals("Toyota Camry", cars.get(0).getModelName());
         assertEquals(200, cars.get(0).getPower());
-        assertEquals("Audi R8", cars.get(1).getModel());
+        assertEquals("Audi R8", cars.get(1).getModelName());
     }
 
     @Test
     void testReadFromAbsolutePath() throws Exception {
-        // Создаем временный файл для теста
         File tempFile = File.createTempFile("cars_test", ".json");
         tempFile.deleteOnExit();
         
-        String jsonContent = "[{\"model\": \"File Car\", \"power\": 200, \"year\": 2021}]";
+        String jsonContent = "[{\"modelName\": \"File Car\", \"power\": 200, \"productionYear\": 2021}]";
         Files.writeString(tempFile.toPath(), jsonContent, StandardCharsets.UTF_8);
 
         // Имитируем ввод абсолютного пути
@@ -63,39 +61,39 @@ class InputTest {
         
         assertNotNull(cars);
         assertEquals(1, cars.size());
-        assertEquals("File Car", cars.get(0).getModel());
+        assertEquals("File Car", cars.get(0).getModelName());
         assertEquals(200, cars.get(0).getPower());
     }
 
     @Test
     void testConsoleInput_ValidJsonArray() {
-        String simulatedInput = "[{\"model\": \"JSON Array Car\", \"power\": 400, \"year\": 2023}]";
+        // Обновлено: ключи JSON изменены на modelName и productionYear
+        String simulatedInput = "[{\"modelName\": \"JSON Array Car\", \"power\": 400, \"productionYear\": 2023}]";
         Input input = createInputWith(simulatedInput);
         
         List<Car> cars = input.execute();
         
         assertNotNull(cars);
         assertEquals(1, cars.size());
-        assertEquals("JSON Array Car", cars.get(0).getModel());
+        assertEquals("JSON Array Car", cars.get(0).getModelName());
     }
 
     @Test
     void testConsoleInput_ValidSingleJsonObject() {
-        // Благодаря ACCEPT_SINGLE_VALUE_AS_ARRAY, одиночный объект тоже должен стать списком из 1 элемента
-        String simulatedInput = "{\"model\": \"Single JSON Car\", \"power\": 120, \"year\": 2019}";
+        // Оодиночный объект тоже должен стать списком из 1 элемента
+        String simulatedInput = "{\"modelName\": \"Single JSON Car\", \"power\": 120, \"productionYear\": 2019}";
         Input input = createInputWith(simulatedInput);
         
         List<Car> cars = input.execute();
         
         assertNotNull(cars);
         assertEquals(1, cars.size());
-        assertEquals("Single JSON Car", cars.get(0).getModel());
+        assertEquals("Single JSON Car", cars.get(0).getModelName());
     }
 
     @Test
     void testConsoleInput_ManualEntry() {
-        // Сценарий: пользователь вводит название, затем мощность, год, и отказывается добавлять еще ('n')
-        // \n имитирует нажатие Enter
+        // Пользователь вводит название, затем мощность, год, и отказывается добавлять еще ('n')
         String simulatedInput = "Manual Car\n150\n2018\nn\n";
         Input input = createInputWith(simulatedInput);
         
@@ -103,9 +101,9 @@ class InputTest {
         
         assertNotNull(cars);
         assertEquals(1, cars.size());
-        assertEquals("Manual Car", cars.get(0).getModel());
+        assertEquals("Manual Car", cars.get(0).getModelName());
         assertEquals(150, cars.get(0).getPower());
-        assertEquals(2018, cars.get(0).getYear());
+        assertEquals(2018, cars.get(0).getProductionYear());
     }
 
     @Test
@@ -118,13 +116,13 @@ class InputTest {
         
         assertNotNull(cars);
         assertEquals(2, cars.size());
-        assertEquals("Car One", cars.get(0).getModel());
-        assertEquals("Car Two", cars.get(1).getModel());
+        assertEquals("Car One", cars.get(0).getModelName());
+        assertEquals("Car Two", cars.get(1).getModelName());
     }
 
     @Test
     void testConsoleInput_InvalidJsonFallbackToManual() {
-        // Сценарий: пользователь вставил битый JSON, программа должна распознать ошибку и перейти к ручному вводу
+        // Пользователь вставил битый JSON, программа должна распознать ошибку и перейти к ручному вводу
         // "{invalid_json" -> ошибка парсинга -> запрос модели -> "Fallback Car" -> 90 -> 2000 -> n
         String simulatedInput = "{invalid_json\nFallback Car\n90\n2000\nn\n";
         Input input = createInputWith(simulatedInput);
@@ -133,15 +131,15 @@ class InputTest {
         
         assertNotNull(cars);
         assertEquals(1, cars.size());
-        assertEquals("Fallback Car", cars.get(0).getModel());
+        assertEquals("Fallback Car", cars.get(0).getModelName());
         assertEquals(90, cars.get(0).getPower());
-        assertEquals(2000, cars.get(0).getYear());
+        assertEquals(2000, cars.get(0).getProductionYear()); // Обновлено
     }
 
     @Test
     void testValidation_FailsOnNegativePower() {
-        // Проверяем, что валидация из AbstractCar/Car работает и при ручном вводе
-        // Ввод: модель, затем отрицательная мощность, затем правильная, затем год, затем выход
+        // Проверяем, что валидация работает и при ручном вводе
+        // Ввод: модель, затем отрицательная мощность (будет отвергнута), затем правильная, затем год, затем выход
         String simulatedInput = "Test Car\n-50\n100\n2020\nn\n";
         Input input = createInputWith(simulatedInput);
         

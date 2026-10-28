@@ -2,13 +2,12 @@ package ru.team114.carsort.input;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import ru.team114.carsort.input.temp.Car;
-
+import ru.team114.carsort.model.Car;
 import java.io.File;
 import java.util.List;
 
 public class FileReader implements Reader {
+
     private final String path;
     private final ObjectMapper mapper;
 
@@ -23,8 +22,10 @@ public class FileReader implements Reader {
         if (!file.exists() || !file.isFile()) {
             throw new RuntimeException("File not found or is not a file: " + path);
         }
+
         try {
-            return mapper.readValue(file, new TypeReference<List<Car>>() {});
+            return mapper.readValue(file, new TypeReference<List<Car>>() {
+            });
         } catch (Exception e) {
             throw new RuntimeException("Error reading file: " + e.getMessage(), e);
         }
