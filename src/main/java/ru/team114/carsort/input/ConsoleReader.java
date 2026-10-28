@@ -24,10 +24,11 @@ public class ConsoleReader implements Reader {
     public List<Car> read() {
         String input = firstLine.trim();
         boolean wasJsonAttempt = input.startsWith("{") || input.startsWith("[");
-        
+
         if (wasJsonAttempt) {
             try {
-                List<Car> cars = mapper.readValue(input, new TypeReference<List<Car>>() {});
+                List<Car> cars = mapper.readValue(input, new TypeReference<List<Car>>() {
+                });
                 System.out.println("JSON successfully recognized. Cars loaded: " + cars.size());
                 return cars;
             } catch (Exception e) {
@@ -35,53 +36,73 @@ public class ConsoleReader implements Reader {
                 System.out.println("→ Switching to manual step-by-step input.\n");
             }
         }
-        
+
         List<Car> cars = new ArrayList<>();
+
+        System.out.print("How many cars do you want to add manually? (Enter 0 for interactive mode): ");
+        int targetCount = 0;
+        try {
+            String countStr = readLine();
+            targetCount = Integer.parseInt(countStr);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid number, defaulting to interactive mode.");
+        }
+
         boolean keepAdding = true;
         String currentModel = wasJsonAttempt ? "" : input;
-        int currentYear = Year.now().getValue();
-        
+        int carIndex = 1;
+
         while (keepAdding) {
+            if (targetCount > 0) {
+                System.out.println("--- Car " + carIndex + " of " + targetCount + " ---");
+            } else {
+                System.out.println("--- Car " + carIndex + " ---");
+            }
+
             String model;
             if (currentModel.isEmpty()) {
                 System.out.print("Car model: ");
                 model = readLine();
             } else {
                 model = currentModel;
-                // Явно печатаем предзаполненную модель с переносом строки
                 System.out.println("Car model: " + model);
             }
 
             int power = readPositiveInt("Power (integer > 0): ");
-            int year = readYear("Year of manufacture (1886-" + currentYear + "): ");
-            
+            int year = readYear("Year of manufacture (1886-" + java.time.Year.now().getValue() + "): ");
+
             try {
                 cars.add(new Car.Builder()
                         .power(power)
                         .modelName(model)
                         .productionYear(year)
                         .build());
-                System.out.println("Car '" + model + "' added.");
+                System.out.println("Car '" + model + "' added.\n");
             } catch (IllegalArgumentException e) {
                 System.out.println("Invalid car data: " + e.getMessage() + " Please try again for this car.\n");
-                continue; // Повторяем ввод для текущего автомобиля
+                continue;
             }
-            
-            currentModel = ""; // Сбрасываем для следующих итераций
-            
-            System.out.print("Add another car? (y/n): ");
-            String answer = readLine().toLowerCase();
-            keepAdding = answer.equals("y") || answer.equals("yes") || answer.equals("д");
-            System.out.println(); // Пустая строка для визуального разделения
+
+            currentModel = "";
+
+            if (targetCount > 0) {
+                if (carIndex >= targetCount) {
+                    keepAdding = false;
+                } else {
+                    carIndex++;
+                }
+            } else {
+                System.out.print("Add another car? (y/n): ");
+                String answer = readLine().toLowerCase();
+                keepAdding = answer.equals("y") || answer.equals("yes") || answer.equals("д");
+                System.out.println();
+                carIndex++;
+            }
         }
-        
+
         return cars;
     }
 
-    /**
-     * Читает строку и выводит её обратно (эхо).
-     * Это делает вывод в JUnit-тестах таким же читаемым, как в реальном терминале.
-     */
     private String readLine() {
         String line = scanner.nextLine().trim();
         System.out.println(line);

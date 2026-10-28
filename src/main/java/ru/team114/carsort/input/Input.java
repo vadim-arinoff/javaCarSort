@@ -34,7 +34,13 @@ public class Input {
     }
 
     private Reader resolveReader(String input) {
-        if (input.matches("^[A-Za-z]:[/\\\\].*") || input.startsWith("/") || input.startsWith("\\")) {
+        if (input.equalsIgnoreCase("random") || input.equalsIgnoreCase("rand") || input.equalsIgnoreCase("случайно")) {
+            System.out.println("Mode: Randomized generation");
+            return new RandomReader(scanner);
+        }
+
+        if (input.matches("^[A-Za-z]:[/\\\\].*") || input.startsWith("/") || input.startsWith("\\")
+                || input.startsWith("\\\\")) {
             System.out.println("Mode: Reading file by path");
             return new FileReader(input, mapper);
         }
