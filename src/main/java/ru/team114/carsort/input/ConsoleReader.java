@@ -2,7 +2,9 @@ package ru.team114.carsort.input;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ru.team114.carsort.collection.CustomCollection;
 import ru.team114.carsort.model.Car;
+
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,31 +23,35 @@ public class ConsoleReader implements Reader {
     }
 
     @Override
-    public List<Car> read() {
+    public CustomCollection<Car> read() {
         String input = firstLine.trim();
         boolean wasJsonAttempt = input.startsWith("{") || input.startsWith("[");
 
         if (wasJsonAttempt) {
             try {
-                List<Car> cars = mapper.readValue(input, new TypeReference<List<Car>>() {
+                List<Car> tempList = mapper.readValue(input, new TypeReference<List<Car>>() {
                 });
-                System.out.println("JSON successfully recognized. Cars loaded: " + cars.size());
+
+                CustomCollection<Car> cars = new CustomCollection<>(tempList.size());
+                tempList.stream().forEach(cars::add);
+
+                System.out.println("JSON успешно распознан. Загружено машин: " + tempList.size());
                 return cars;
             } catch (Exception e) {
-                System.out.println("Failed to parse JSON (" + e.getMessage() + ").");
-                System.out.println("→ Switching to manual step-by-step input.\n");
+                System.out.println("Не удалось распознать JSON (" + e.getMessage() + ").");
+                System.out.println("Переключаюсь на ручной пошаговый ввод.\n");
             }
         }
 
-        List<Car> cars = new ArrayList<>();
+        List<Car> tempList = new ArrayList<>();
 
-        System.out.print("How many cars do you want to add manually? (Enter 0 for interactive mode): ");
+        System.out.print("Сколько машин вы хотите добавить? (Введите 0 для интерактивного режима): ");
         int targetCount = 0;
         try {
             String countStr = readLine();
             targetCount = Integer.parseInt(countStr);
         } catch (NumberFormatException e) {
-            System.out.println("Invalid number, defaulting to interactive mode.");
+            System.out.println("Неверное число, переключаюсь на интерактивный режим.");
         }
 
         boolean keepAdding = true;
@@ -54,32 +60,36 @@ public class ConsoleReader implements Reader {
 
         while (keepAdding) {
             if (targetCount > 0) {
-                System.out.println("--- Car " + carIndex + " of " + targetCount + " ---");
+                System.out.println("--- Машина " + carIndex + " из " + targetCount + " ---");
             } else {
-                System.out.println("--- Car " + carIndex + " ---");
+                System.out.println("--- Машина " + carIndex + " ---");
             }
 
             String model;
             if (currentModel.isEmpty()) {
-                System.out.print("Car model: ");
+                System.out.print("Модель автомобиля: ");
                 model = readLine();
             } else {
                 model = currentModel;
-                System.out.println("Car model: " + model);
+                System.out.println("Модель автомобиля: " + model);
             }
 
-            int power = readPositiveInt("Power (integer > 0): ");
-            int year = readYear("Year of manufacture (1886-" + java.time.Year.now().getValue() + "): ");
+            int power = readPositiveInt("Мощность (целое число > 0): ");
+            int year = readYear("Год выпуска (1886-" + Year.now().getValue() + "): ");
 
             try {
-                cars.add(new Car.Builder()
+                Car newCar = new Car.Builder()
                         .power(power)
                         .modelName(model)
                         .productionYear(year)
-                        .build());
-                System.out.println("Car '" + model + "' added.\n");
+                        .build();
+
+                tempList.add(newCar);
+                System.out.println("Автомобиль '" + model + "' успешно добавлен.\n");
+
             } catch (IllegalArgumentException e) {
-                System.out.println("Invalid car data: " + e.getMessage() + " Please try again for this car.\n");
+                System.out.println("Неверные данные автомобиля: " + e.getMessage()
+                        + " Пожалуйста, попробуйте снова для этой машины.\n");
                 continue;
             }
 
@@ -92,7 +102,7 @@ public class ConsoleReader implements Reader {
                     carIndex++;
                 }
             } else {
-                System.out.print("Add another car? (y/n): ");
+                System.out.print("Добавить еще одну машину? (y/n): ");
                 String answer = readLine().toLowerCase();
                 keepAdding = answer.equals("y") || answer.equals("yes") || answer.equals("д");
                 System.out.println();
@@ -100,12 +110,14 @@ public class ConsoleReader implements Reader {
             }
         }
 
-        return cars;
+        CustomCollection<Car> resultCollection = new CustomCollection<>(tempList.size());
+        tempList.stream().forEach(resultCollection::add);
+
+        return resultCollection;
     }
 
     private String readLine() {
         String line = scanner.nextLine().trim();
-        System.out.println(line);
         return line;
     }
 
@@ -116,12 +128,12 @@ public class ConsoleReader implements Reader {
             try {
                 int val = Integer.parseInt(line);
                 if (val <= 0) {
-                    System.out.println("Must be > 0. Please try again.");
+                    System.out.println("Значение должно быть > 0. Пожалуйста, попробуйте снова.");
                     continue;
                 }
                 return val;
             } catch (NumberFormatException e) {
-                System.out.println("Expected an integer. Please try again.");
+                System.out.println("Ожидалось целое число. Пожалуйста, попробуйте снова.");
             }
         }
     }
@@ -134,12 +146,13 @@ public class ConsoleReader implements Reader {
                 int val = Integer.parseInt(line);
                 int currentYear = Year.now().getValue();
                 if (val < 1886 || val > currentYear) {
-                    System.out.println("Year must be between 1886 and " + currentYear + ". Please try again.");
+                    System.out.println("Год должен быть в диапазоне от 1886 до " + currentYear
+                            + ". Пожалуйста, попробуйте снова.");
                     continue;
                 }
                 return val;
             } catch (NumberFormatException e) {
-                System.out.println("Expected an integer. Please try again.");
+                System.out.println("Ожидалось целое число. Пожалуйста, попробуйте снова.");
             }
         }
     }
