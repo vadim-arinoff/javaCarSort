@@ -2,55 +2,110 @@
 package ru.team114.carsort.collection;
 
 import org.junit.jupiter.api.Test;
+import ru.team114.carsort.model.Car;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class CustomCollectionTest {
 
     @Test
-    void addElements() {
-        CustomCollection<String> cars = new CustomCollection<>(2);
+    void addShouldIncreaseSizeAndStoreElements() {
+        CustomCollection<String> collection = new CustomCollection<>();
 
-        cars.add("Toyota");
-        cars.add("BMW");
-        cars.add("Audi");
+        collection.add("First");
+        collection.add("Second");
 
-        assertEquals(3, cars.size());
-        assertEquals("Toyota", cars.get(0));
-        assertEquals("BMW", cars.get(1));
-        assertEquals("Audi", cars.get(2));
+        assertEquals(2, collection.size());
+        assertEquals("First", collection.get(0));
+        assertEquals("Second", collection.get(1));
     }
 
     @Test
-    void setElement() {
-        CustomCollection<String> cars = new CustomCollection<>();
-        cars.add("BMW");
+    void addShouldIncreaseCapacityWhenCollectionIsFull() {
+        CustomCollection<Integer> collection = new CustomCollection<>(1);
 
-        String oldValue = cars.set(0, "Mercedes");
+        collection.add(10);
+        collection.add(20);
 
-        assertEquals("BMW", oldValue);
-        assertEquals("Mercedes", cars.get(0));
+        assertEquals(2, collection.size());
+        assertEquals(10, collection.get(0));
+        assertEquals(20, collection.get(1));
     }
 
     @Test
-    void getElementWithInvalidIndex() {
-        CustomCollection<String> cars = new CustomCollection<>();
+    void setShouldReplaceElementAndReturnOldElement() {
+        CustomCollection<String> collection = new CustomCollection<>();
 
-        assertThrows(IndexOutOfBoundsException.class,
-                () -> cars.get(0));
+        collection.add("Old");
+        String oldElement = collection.set(0, "New");
+
+        assertEquals("Old", oldElement);
+        assertEquals("New", collection.get(0));
     }
 
     @Test
-    void collectionIsEmptyAtCreation() {
-        CustomCollection<String> cars = new CustomCollection<>();
+    void getShouldThrowExceptionWhenIndexIsInvalid() {
+        CustomCollection<String> collection = new CustomCollection<>();
 
-        assertTrue(cars.isEmpty());
-        assertEquals(0, cars.size());
+        assertThrows(
+                IndexOutOfBoundsException.class,
+                () -> collection.get(0)
+        );
     }
 
     @Test
-    void negativeCapacityThrowsException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new CustomCollection<String>(-1));
+    void collectionShouldBeEmptyWhenCreated() {
+        CustomCollection<String> collection = new CustomCollection<>();
+
+        assertTrue(collection.isEmpty());
+        assertEquals(0, collection.size());
+    }
+
+    @Test
+    void constructorShouldThrowExceptionWhenCapacityIsNegative() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new CustomCollection<>(-1)
+        );
+    }
+
+    @Test
+    void addShouldStoreCarObjects() {
+        CustomCollection<Car> cars = new CustomCollection<>();
+
+        Car car = new Car.Builder()
+                .power(150)
+                .modelName("Toyota Camry")
+                .productionYear(2020)
+                .build();
+
+        cars.add(car);
+
+        assertEquals(1, cars.size());
+        assertSame(car, cars.get(0));
+    }
+
+    @Test
+    void setShouldReplaceCarObject() {
+        CustomCollection<Car> cars = new CustomCollection<>();
+
+        Car oldCar = new Car.Builder()
+                .power(150)
+                .modelName("Toyota Camry")
+                .productionYear(2020)
+                .build();
+
+        Car newCar = new Car.Builder()
+                .power(200)
+                .modelName("BMW X5")
+                .productionYear(2022)
+                .build();
+
+        cars.add(oldCar);
+
+        Car replacedCar = cars.set(0, newCar);
+
+        assertSame(oldCar, replacedCar);
+        assertSame(newCar, cars.get(0));
     }
 }
