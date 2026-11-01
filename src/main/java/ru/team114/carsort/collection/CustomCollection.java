@@ -2,7 +2,7 @@ package ru.team114.carsort.collection;
 
 import java.util.Arrays;
 
-public class CustomCollection<T> {
+public class CustomCollection<T>  implements MutableSequence<T> {
 
     private static final int DEFAULT_CAPACITY = 10;
 
@@ -25,6 +25,7 @@ public class CustomCollection<T> {
     }
 
     // Добавление элемента
+    @Override
     public void add(T element) {
         ensureCapacity(size + 1);
         elements[size] = element;
@@ -32,6 +33,7 @@ public class CustomCollection<T> {
     }
 
     // Чтение элемента по индексу
+    @Override
     @SuppressWarnings("unchecked")
     public T get(int index) {
         checkIndex(index);
@@ -40,17 +42,14 @@ public class CustomCollection<T> {
     }
 
     // Изменение элемента по индексу
-    @SuppressWarnings("unchecked")
-    public T set(int index, T element) {
+    @Override
+    public void set(int index, T element) {
         checkIndex(index);
-
-        T oldElement = (T) elements[index];
         elements[index] = element;
-
-        return oldElement;
     }
 
     // Получение количества элементов
+    @Override
     public int size() {
         return size;
     }

@@ -1,4 +1,3 @@
-
 package ru.team114.carsort.collection;
 
 import org.junit.jupiter.api.Test;
@@ -33,14 +32,14 @@ class CustomCollectionTest {
     }
 
     @Test
-    void setShouldReplaceElementAndReturnOldElement() {
+    void setShouldReplaceElement() {
         CustomCollection<String> collection = new CustomCollection<>();
 
         collection.add("Old");
-        String oldElement = collection.set(0, "New");
+        collection.set(0, "New");
 
-        assertEquals("Old", oldElement);
         assertEquals("New", collection.get(0));
+        assertEquals(1, collection.size());
     }
 
     @Test
@@ -102,10 +101,9 @@ class CustomCollectionTest {
                 .build();
 
         cars.add(oldCar);
+        cars.set(0, newCar);
 
-        Car replacedCar = cars.set(0, newCar);
-
-        assertSame(oldCar, replacedCar);
         assertSame(newCar, cars.get(0));
+        assertEquals(1, cars.size());
     }
 }
