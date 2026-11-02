@@ -2,19 +2,21 @@ package ru.team114.carsort.input;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ru.team114.carsort.model.Car;
 import ru.team114.carsort.collection.CustomCollection;
+import ru.team114.carsort.model.Car;
+
 import java.io.File;
 import java.util.List;
 
 public class FileReader implements Reader {
-
     private final String path;
     private final ObjectMapper mapper;
+    private final int n;
 
-    public FileReader(String path, ObjectMapper mapper) {
+    public FileReader(String path, ObjectMapper mapper, int n) {
         this.path = path;
         this.mapper = mapper;
+        this.n = n;
     }
 
     @Override
@@ -25,11 +27,21 @@ public class FileReader implements Reader {
         }
 
         try {
-            List<Car> list = mapper.readValue(file, new TypeReference<List<Car>>() {
-            });
+            List<Car> list = mapper.readValue(file, new TypeReference<List<Car>>() {});
+            
+            if (list == null || list.size() < n) {
+                throw new RuntimeException("Ошибка: в файле содержится " + (list == null ? 0 : list.size()) 
+                        + " машин, что меньше запрошенных " + n + ". Частичная коллекция не возвращается.");
+            }
+            
             CustomCollection<Car> cars = new CustomCollection<>();
-            list.stream().forEach(cars::add);
+            for (int i = 0; i < n; i++) {
+                cars.add(list.get(i));
+            }
             return cars;
+            
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Error reading file: " + e.getMessage(), e);
         }
