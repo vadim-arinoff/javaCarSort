@@ -27,19 +27,22 @@ public class FileReader implements Reader {
         }
 
         try {
-            List<Car> list = mapper.readValue(file, new TypeReference<List<Car>>() {});
-            
+            List<Car> list = mapper.readValue(file, new TypeReference<List<Car>>() {
+            });
+
             if (list == null || list.size() < n) {
-                throw new RuntimeException("Ошибка: в файле содержится " + (list == null ? 0 : list.size()) 
+                throw new RuntimeException("Ошибка: в файле содержится " + (list == null ? 0 : list.size())
                         + " машин, что меньше запрошенных " + n + ". Частичная коллекция не возвращается.");
             }
-            
-            CustomCollection<Car> cars = new CustomCollection<>();
-            for (int i = 0; i < n; i++) {
-                cars.add(list.get(i));
-            }
-            return cars;
-            
+
+            return list.stream()
+                    .limit(n)
+                    .collect(
+                            CustomCollection::new,
+                            CustomCollection::add,
+                            (c1, c2) -> {
+                            });
+
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
