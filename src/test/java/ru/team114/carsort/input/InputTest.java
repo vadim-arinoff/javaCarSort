@@ -52,12 +52,12 @@ class InputTest {
         String absolutePath = tempFile.toAbsolutePath().toString();
         
         ObjectMapper mapper = new ObjectMapper();
-        FileReader reader = new FileReader(absolutePath, mapper);
+        FileReader reader = new FileReader(absolutePath, mapper, 5);
 
         CustomCollection<Car> result = reader.read();
 
         assertNotNull(result, "Коллекция не должна быть null");
-        assertEquals(2, result.size(), "Должно быть прочитано ровно 2 автомобиля");
+        assertEquals(5, result.size(), "Должно быть прочитано ровно 5 автомобилей");
 
         Car car1 = result.get(0);
         assertEquals("Toyota Camry", car1.getModelName());
@@ -68,12 +68,53 @@ class InputTest {
         assertEquals("Audi R8", car2.getModelName());
         assertEquals(525, car2.getPower());
         assertEquals(2010, car2.getProductionYear());
+
+        Car car3 = result.get(2);
+        assertEquals("Corvette C6", car3.getModelName());
+        assertEquals(405, car3.getPower());
+        assertEquals(2006, car3.getProductionYear());
+
+        Car car4 = result.get(3);
+        assertEquals("Honda Accord Gen 6", car4.getModelName());
+        assertEquals(140, car4.getPower());
+        assertEquals(1998, car4.getProductionYear());
+        
+        Car car5 = result.get(4);
+        assertEquals("Toyota Mark II", car5.getModelName());
+        assertEquals(200, car5.getPower());
+        assertEquals(2001, car5.getProductionYear());
+    }
+
+    @Test
+    @DisplayName("FileReader: Чтение ровно N машин, игнорируя лишние")
+    void testFileReaderIgnoresExtraCarsInFile() throws IOException {
+        InputStream resourceStream = getClass().getResourceAsStream("/test_car.json");
+        assertNotNull(resourceStream, "Ресурс test_car.json должен существовать в src/test/resources");
+        
+        String jsonContent = new String(resourceStream.readAllBytes());
+        resourceStream.close();
+        
+        Path tempFile = tempDir.resolve("test_car.json");
+        Files.writeString(tempFile, jsonContent);
+        String absolutePath = tempFile.toAbsolutePath().toString();
+        
+        ObjectMapper mapper = new ObjectMapper();
+        
+        FileReader reader = new FileReader(absolutePath, mapper, 5);
+        CustomCollection<Car> result = reader.read();
+
+        assertNotNull(result, "Коллекция не должна быть null");
+        assertEquals(5, result.size(), "Должно быть прочитано ровно 5 автомобилей, остальные 3 должны быть проигнорированы");
+        
+        assertThrows(IndexOutOfBoundsException.class, () -> {
+            result.get(5);
+        }, "Попытка получить 6-й автомобиль должна вызвать ошибку, так как запрошено и загружено было только 5");
     }
 
     @Test
     @DisplayName("FileReader: Ошибка при отсутствии файла")
     void testFileReaderFileNotFound() {
-        FileReader reader = new FileReader("non_existent_file.json", mapper);
+        FileReader reader = new FileReader("non_existent_file.json", mapper, 5);
         RuntimeException exception = assertThrows(RuntimeException.class, reader::read);
         assertTrue(exception.getMessage().contains("File not found"));
     }
@@ -84,7 +125,7 @@ class InputTest {
         Path filePath = tempDir.resolve("invalid.json");
         Files.writeString(filePath, "not a valid json");
 
-        FileReader reader = new FileReader(filePath.toString(), mapper);
+        FileReader reader = new FileReader(filePath.toString(), mapper, 5);
         RuntimeException exception = assertThrows(RuntimeException.class, reader::read);
         assertTrue(exception.getMessage().contains("Error reading file"));
     }
@@ -108,7 +149,7 @@ class InputTest {
         CustomCollection<Car> result = reader.read();
 
         assertNotNull(result, "Коллекция не должна быть null");
-        assertEquals(2, result.size(), "Должно быть прочитано ровно 2 автомобиля");
+        assertEquals(8, result.size(), "Должны быть прочитаны все машины test_car.json (8)");
 
         Car car1 = result.get(0);
         assertEquals("Toyota Camry", car1.getModelName());
@@ -119,6 +160,21 @@ class InputTest {
         assertEquals("Audi R8", car2.getModelName());
         assertEquals(525, car2.getPower());
         assertEquals(2010, car2.getProductionYear());
+
+        Car car3 = result.get(2);
+        assertEquals("Corvette C6", car3.getModelName());
+        assertEquals(405, car3.getPower());
+        assertEquals(2006, car3.getProductionYear());
+
+        Car car4 = result.get(3);
+        assertEquals("Honda Accord Gen 6", car4.getModelName());
+        assertEquals(140, car4.getPower());
+        assertEquals(1998, car4.getProductionYear());
+        
+        Car car5 = result.get(4);
+        assertEquals("Toyota Mark II", car5.getModelName());
+        assertEquals(200, car5.getPower());
+        assertEquals(2001, car5.getProductionYear());
     }
 
     // RandomReader Tests
@@ -223,7 +279,10 @@ class InputTest {
         Path filePath = tempDir.resolve("test.json");
         Files.writeString(filePath, "[{\"modelName\":\"Ford\",\"power\":100,\"productionYear\":2010}]");
         
-        when(scanner.nextLine()).thenReturn(filePath.toString());
+        when(scanner.nextLine())
+                .thenReturn(filePath.toString())
+                .thenReturn("1"); 
+                
         Input input = new Input(scanner, mapper);
         
         CustomCollection<Car> result = input.execute();

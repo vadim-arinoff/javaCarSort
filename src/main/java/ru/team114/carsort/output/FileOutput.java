@@ -14,6 +14,8 @@ import java.util.List;
 
 public class FileOutput implements Output {
     private final ObjectMapper mapper;
+    
+    private static final String DEFAULT_FILE_NAME = "results.jsonl";
 
     public FileOutput() {
         this.mapper = new ObjectMapper();
@@ -24,6 +26,10 @@ public class FileOutput implements Output {
         if (data == null || data.isEmpty()) {
             System.out.println("Нет данных для записи в файл.");
             return;
+        }
+
+        if (filePath == null || filePath.trim().isEmpty()) {
+            filePath = DEFAULT_FILE_NAME;
         }
 
         Path path = Paths.get(filePath);
