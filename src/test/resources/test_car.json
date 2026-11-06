@@ -1,0 +1,42 @@
+[
+  {
+    "modelName": "Toyota Camry",
+    "power": 200,
+    "productionYear": 2022
+  },
+  {
+    "modelName": "Audi R8",
+    "power": 525,
+    "productionYear": 2010
+  },
+  {
+    "modelName": "Corvette C6",
+    "power": 405,
+    "productionYear": 2006
+  },
+  {
+    "modelName": "Honda Accord Gen 6",
+    "power": 140,
+    "productionYear": 1998
+  },
+  {
+    "modelName": "Toyota Mark II",
+    "power": 200,
+    "productionYear": 2001
+  },
+  {
+    "modelName": "Aston Martin DB9",
+    "power": 477,
+    "productionYear": 2008
+  },
+  {
+    "modelName": "Lotus Elise",
+    "power": 192,
+    "productionYear": 2004
+  },
+  {
+    "modelName": "BMW M3 E46",
+    "power": 343,
+    "productionYear": 2001
+  }
+]
