@@ -1,23 +1,29 @@
 package ru.team114.carsort.sorting;
 
 import ru.team114.carsort.collection.CustomCollection;
+import ru.team114.carsort.collection.MutableSequence;
 
 import java.util.Comparator;
 import java.util.function.ToIntFunction;
 
 public class EvenOddSorter<T> implements SortStrategy<T> {
-
     private final ToIntFunction<T> numericFieldExtractor;
+    private final SortStrategy<T> innerSortStrategy;
 
-    public EvenOddSorter(ToIntFunction<T> numericFieldExtractor) {
+
+    public EvenOddSorter(ToIntFunction<T> numericFieldExtractor, SortStrategy<T> innerSortStrategy) {
         if (numericFieldExtractor == null) {
             throw new IllegalArgumentException("Numeric field extractor cannot be null");
         }
+        if (innerSortStrategy == null) {
+            throw new IllegalArgumentException("Inner sorting strategy cannot be null");
+        }
         this.numericFieldExtractor = numericFieldExtractor;
+        this.innerSortStrategy = innerSortStrategy;
     }
 
     @Override
-    public void sort(CustomCollection<T> elements, Comparator<? super T> comparator) {
+    public void sort(MutableSequence<T> elements, Comparator<? super T> comparator) {
         if (elements == null) {
             throw new IllegalArgumentException("Elements collection cannot be null");
         }
@@ -30,8 +36,8 @@ public class EvenOddSorter<T> implements SortStrategy<T> {
             return;
         }
 
-        CustomCollection<Integer> evenIndices = new CustomCollection<>();
-        CustomCollection<T> evenElements = new CustomCollection<>();
+        MutableSequence<Integer> evenIndices = new CustomCollection<>();
+        MutableSequence<T> evenElements = new CustomCollection<>();
 
         // Создание коллекции с чётными элементами и их индексами
         for (int i = 0; i < n; i++) {
@@ -49,18 +55,9 @@ public class EvenOddSorter<T> implements SortStrategy<T> {
             return;
         }
 
-        //Сортировка пузырьком только чётных
-        for (int a = 0; a < size - 1; a++) {
-            for (int b = 0; b < size - 1 - a; b++) {
-                if (comparator.compare(evenElements.get(b), evenElements.get(b + 1)) > 0) {
-                    T temp = evenElements.get(b);
-                    evenElements.set(b, evenElements.get(b + 1));
-                    evenElements.set(b + 1, temp);
-                }
-            }
-        }
+        innerSortStrategy.sort(evenElements, comparator);
 
-        //Возврат отсортированных чётных элементов на их прежние места
+        // Возврат отсортированных чётных элементов на их прежние места
         for (int k = 0; k < evenIndices.size(); k++) {
             elements.set(evenIndices.get(k), evenElements.get(k));
         }

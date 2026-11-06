@@ -1,13 +1,13 @@
 package ru.team114.carsort.multithreading;
 
-import ru.team114.carsort.collection.CustomCollection;
+import ru.team114.carsort.collection.MutableSequence;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
 public class CarCounter {
-    public static <T> void countOccurrences(CustomCollection<T> elements, T target) {
+    public static <T> void countOccurrences(MutableSequence<T> elements, T target) {
         if (elements == null) {
             throw new IllegalArgumentException("Collection cannot be null");
         }
