@@ -38,23 +38,25 @@ public class Input {
     }
 
     private Reader resolveReader(String input) {
-        if (new File(input).isAbsolute()) {
-            System.out.println("Режим: Чтение файла по абсолютному пути");
+        File file = new File(input);
+
+        if (file.isFile() || file.isAbsolute()) {
+            System.out.println("Режим: чтение файла");
             int n = requestCarCount(scanner);
             return new FileReader(input, mapper, n);
         }
 
-        if (input.equalsIgnoreCase("random") || input.equalsIgnoreCase("rand") || input.equalsIgnoreCase("случайно")) {
-            System.out.println("Режим: Случайная генерация");
+        if (input.equalsIgnoreCase("random") || input.equalsIgnoreCase("rand")) {
+            System.out.println("Режим: случайная генерация");
             return new RandomReader(scanner);
         }
 
         if (input.toLowerCase().endsWith(".json") && !input.contains("/") && !input.contains("\\")) {
-            System.out.println("Режим: Чтение из classpath (resources)");
-            return new ResourceReader(input, mapper); 
+            System.out.println("Режим: чтение JSON файла из resources");
+            return new ResourceReader(input, mapper);
         }
 
-        System.out.println("Режим: Консольный ввод (JSON или ручной)");
+        System.out.println("Режим: ручной ввод");
         return new ConsoleReader(scanner, input, mapper);
     }
 

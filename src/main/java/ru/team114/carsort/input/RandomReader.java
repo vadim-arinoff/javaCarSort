@@ -48,7 +48,6 @@ public class RandomReader implements Reader {
         while (true) {
             try {
                 String line = scanner.nextLine().trim();
-                System.out.println(line);
                 count = Integer.parseInt(line);
                 if (count > 0) {
                     break;

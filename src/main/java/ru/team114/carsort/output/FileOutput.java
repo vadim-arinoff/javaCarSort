@@ -1,5 +1,6 @@
 package ru.team114.carsort.output;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.team114.carsort.collection.CustomCollection;
 import ru.team114.carsort.model.Car;
@@ -8,17 +9,17 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FileOutput implements Output {
     private final ObjectMapper mapper;
     
-    private static final String DEFAULT_FILE_NAME = "results.jsonl";
+    private static final String DEFAULT_FILE_NAME = "results.json";
 
     public FileOutput() {
         this.mapper = new ObjectMapper();
+        this.mapper.writerWithDefaultPrettyPrinter(); 
     }
 
     @Override
@@ -30,31 +31,46 @@ public class FileOutput implements Output {
 
         if (filePath == null || filePath.trim().isEmpty()) {
             filePath = DEFAULT_FILE_NAME;
+        } else {
+            filePath = filePath.trim();
+            if (!filePath.toLowerCase().endsWith(".json")) {
+                int lastDot = filePath.lastIndexOf('.');
+                if (lastDot > 0) {
+                    filePath = filePath.substring(0, lastDot) + ".json";
+                } else {
+                    filePath = filePath + ".json";
+                }
+            }
         }
 
         Path path = Paths.get(filePath);
+        List<Car> carsToSave = new ArrayList<>();
 
         try {
-            if (!Files.exists(path)) {
+            if (Files.exists(path) && Files.size(path) > 0) {
+                try {
+                    carsToSave = mapper.readValue(path.toFile(), new TypeReference<List<Car>>() {});
+                } catch (IOException e) {
+                    System.err.println("Файл существует, но поврежден или пуст. Начинаем запись заново.");
+                    carsToSave = new ArrayList<>();
+                }
+            } else {
                 if (path.getParent() != null) {
                     Files.createDirectories(path.getParent());
                 }
-                Files.createFile(path);
                 System.out.println("Создан новый файл: " + filePath);
             }
 
-            List<String> linesToAppend = new ArrayList<>();
             for (int i = 0; i < data.size(); i++) {
-                Car car = data.get(i);
-                String jsonLine = mapper.writeValueAsString(car);
-                linesToAppend.add(jsonLine);
+                carsToSave.add(data.get(i));
             }
 
-            Files.write(path, linesToAppend, StandardOpenOption.APPEND);
-            System.out.println("Успешно добавлено " + data.size() + " записей в файл: " + filePath);
+            mapper.writeValue(path.toFile(), carsToSave);
+            
+            System.out.println("Успешно добавлено " + data.size() + " записей в файл: " + filePath + " (всего в файле: " + carsToSave.size() + ")");
 
         } catch (IOException e) {
-            System.err.println("Ошибка при записи в файл: " + e.getMessage());
+            System.err.println("Ошибка при работе с файлом: " + e.getMessage());
         }
     }
 }
