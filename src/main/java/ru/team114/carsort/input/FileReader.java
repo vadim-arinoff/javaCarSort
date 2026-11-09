@@ -1,18 +1,17 @@
 package ru.team114.carsort.input;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.team114.carsort.collection.CustomCollection;
 import ru.team114.carsort.model.Car;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.util.List;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.List;
 
 public class FileReader implements Reader {
     private final String path;
@@ -20,6 +19,9 @@ public class FileReader implements Reader {
     private final int n;
 
     public FileReader(String path, ObjectMapper mapper, int n) {
+        if (n <= 0) {
+            throw new IllegalArgumentException("Количество запрашиваемых автомобилей (n) должно быть больше 0");
+        }
         this.path = path;
         this.mapper = mapper;
         this.n = n;
@@ -28,7 +30,8 @@ public class FileReader implements Reader {
     @Override
     public CustomCollection<Car> read() {
         File file = new File(path);
-        if (!file.exists() || !file.isFile()) {
+
+        if (!file.exists()) {
             throw new RuntimeException("File not found: " + path);
         }
 
@@ -37,61 +40,57 @@ public class FileReader implements Reader {
         }
 
         try {
-            List<Car> list = mapper.readValue(file, new TypeReference<List<Car>>() {
-            });
-
-            if (list == null || list.size() < n) {
-                throw new RuntimeException("Ошибка: в файле содержится " + (list == null ? 0 : list.size())
-                        + " машин, что меньше запрошенных " + n + ". Частичная коллекция не возвращается.");
+            List<Car> list = mapper.readValue(file, new TypeReference<List<Car>>() {});
+            CustomCollection<Car> result = new CustomCollection<>();
+            
+            int limit = Math.min(n, list.size());
+            for (int i = 0; i < limit; i++) {
+                result.add(list.get(i));
             }
 
-            return list.stream()
-                    .limit(n)
-                    .collect(
-                            CustomCollection::new,
-                            CustomCollection::add,
-                            (c1, c2) -> {
-                            });
-
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
+            if (result.size() < n) {
+                throw new IllegalArgumentException("В файле меньше запрошенных автомобилей. Частичная коллекция не возвращается. (Запрошено: " + n + ", найдено: " + result.size() + ")");
+            }
+            
+            return result;
+        } catch (IOException e) {
             throw new RuntimeException("Error reading file: " + e.getMessage(), e);
         }
     }
 
     private CustomCollection<Car> readJsonLines(File file) {
         CustomCollection<Car> result = new CustomCollection<>();
-        AtomicInteger lineNumber = new AtomicInteger();
 
-        try (Stream<String> lines = Files.lines(file.toPath(), StandardCharsets.UTF_8)) {
-        
-            lines.limit(n).forEach(line -> {
-                int currentLine = lineNumber.incrementAndGet();
+        try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
+            String line;
+            int currentLine = 0;
+
+            while ((line = reader.readLine()) != null && result.size() < n) {
+                currentLine++;
 
                 if (line.isBlank()) {
                     throw new IllegalArgumentException("Пустая строка в файле: " + currentLine);
-            }
+                }
 
-            try {
-                Car car = mapper.readValue(line, Car.class);
+                try {
+                    Car car = mapper.readValue(line, Car.class);
 
                     if (car == null) {
                         throw new IllegalArgumentException("В строке " + currentLine + " нет автомобиля");
-                }
+                    }
 
-                result.add(car);
-            } catch (JsonProcessingException e) {
-                throw new IllegalArgumentException("Ошибка JSON в строке " + currentLine+ ": " + e.getOriginalMessage(), e);
+                    result.add(car);
+                } catch (JsonProcessingException e) {
+                    throw new IllegalArgumentException("Ошибка JSON в строке " + currentLine + ": " + e.getOriginalMessage(), e);
+                }
             }
-        });
-            } catch (IOException e) {
-                throw new RuntimeException("Не удалось прочитать файл: " + path, e);
-            }
+        } catch (IOException e) {
+            throw new RuntimeException("Не удалось прочитать файл: " + path, e);
+        }
 
         if (result.size() < n) {
-            throw new IllegalArgumentException("В файле только " + result.size() + " автомобилей, а запрошено " + n);
-            }
+            throw new IllegalArgumentException("В файле меньше запрошенных автомобилей. Частичная коллекция не возвращается. (Запрошено: " + n + ", найдено: " + result.size() + ")");
+        }
 
         return result;
     }

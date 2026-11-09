@@ -143,7 +143,7 @@ public class Main {
             return;
         }
 
-        System.out.print("Путь к файлу результата | (Enter - results.jsonl): ");
+        System.out.print("Путь к файлу результата | (Enter - results.json): ");
         String path = scanner.nextLine().trim();
 
         output.write(cars, path);
