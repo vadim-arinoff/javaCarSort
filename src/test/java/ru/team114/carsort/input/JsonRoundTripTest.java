@@ -11,14 +11,14 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class JsonLinesRoundTripTest {
+class JsonRoundTripTest {
 
     @TempDir
     Path tempDir;
 
     @Test
     void savedCarsCanBeReadBack() {
-        Path file = tempDir.resolve("results.jsonl");
+        Path file = tempDir.resolve("results.json");
         CustomCollection<Car> original = new CustomCollection<>();
 
         original.add(new Car.Builder()

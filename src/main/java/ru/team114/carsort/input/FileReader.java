@@ -43,10 +43,9 @@ public class FileReader implements Reader {
             List<Car> list = mapper.readValue(file, new TypeReference<List<Car>>() {});
             CustomCollection<Car> result = new CustomCollection<>();
             
-            int limit = Math.min(n, list.size());
-            for (int i = 0; i < limit; i++) {
-                result.add(list.get(i));
-            }
+            list.stream()
+                .limit(n)
+                .forEach(result::add);
 
             if (result.size() < n) {
                 throw new IllegalArgumentException("В файле меньше запрошенных автомобилей. Частичная коллекция не возвращается. (Запрошено: " + n + ", найдено: " + result.size() + ")");

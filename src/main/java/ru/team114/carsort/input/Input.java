@@ -40,7 +40,7 @@ public class Input {
     private Reader resolveReader(String input) {
         File file = new File(input);
 
-        if (file.isFile() || file.isAbsolute() || input.toLowerCase().endsWith(".jsonl")) {
+        if (file.isFile() || file.isAbsolute()) {
             System.out.println("Режим: чтение файла");
             int n = requestCarCount(scanner);
             return new FileReader(input, mapper, n);

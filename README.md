@@ -63,11 +63,12 @@ Run в VsCode на файле src\main\java\ru\team114\carsort\Main.java
 ```
 ### Файл результата
 
-По умолчанию результат записывается в `results.jsonl`. Каждая строка этого файла — отдельный JSON-объект:  
+По умолчанию результат записывается в `results.json`.
 
 ```json
-{"power":95,"modelName":"Kia Rio","productionYear":2022}
-{"power":120,"modelName":"Toyota Corolla","productionYear":2020}
+[{"power":349,"modelName":"Dodge Challenger 1970","productionYear":1971},
+{"power":110,"modelName":"Lada Vesta","productionYear":2022},
+{"power":101,"modelName":"Ford Focus","productionYear":2018}]
 ```
 
 Повторная запись добавляет строки в конец файла.  
